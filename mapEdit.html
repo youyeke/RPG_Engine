@@ -68,16 +68,14 @@
 				var mapPaint = {
 					paint : '',//画图用
 					proto : '',//恢复用
-					x : 0,
-					y : 0,
 					scrollX : 0,
 					scrollY : 0,
 					savePaint : function(canvas,x,y){
 						this.paint = canvas.getImageData(selectArea.startX, selectArea.startY, x, y);
-						console.log(selectArea.startX, selectArea.startY, x, y)
-						this.proto = canvas.getImageData(selectArea.startX -2, selectArea.startY -2, x +4, y+4);
-						this.x = selectArea.startX - 2;
-						this.y = selectArea.startY - 2;
+						//console.log(selectArea.startX, selectArea.startY, x, y)
+						if(mapPaint.proto == ''){
+							this.proto = canvas.getImageData(0, 0, mapDOM.width, mapDOM.height);
+						}
 					},
 					putPaint : function(canvas,x,y){
 						if(mapPaint.paint != ''){
@@ -87,7 +85,9 @@
 						}
 					},
 					clearBorder : function(canvas){
-						canvas.putImageData(this.proto,this.x,this.y);
+						if(mapPaint.proto != ''){
+							canvas.putImageData(this.proto,0,0);
+						}
 					}
 				};
 				var selectArea = {
@@ -102,7 +102,7 @@
 					stop : function(x,y){
 						this.endX = x;
 						this.endY = y;
-						console.log(this)
+						//console.log(this)
 					}
 				};
 				mapDOM.addEventListener('mousedown',function(e){
@@ -111,9 +111,7 @@
 					x = Math.floor(x/16)*16;
 					y = Math.floor(y/16)*16;
 					selectArea.record(x,y);
-					if(mapPaint.paint != ''){
-						mapPaint.clearBorder(map);
-					}
+					mapPaint.clearBorder(map);
 				});
 				mapDOM.addEventListener('mouseup',function(e){
 					var x = e.clientX + mapPaint.scrollX - mapPosition.x,
