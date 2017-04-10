@@ -1,0 +1,25 @@
+.map{
+	width: 350px;
+	height: 720px;
+	overflow : auto;
+	float: left;
+}
+.map>div{
+	background-color: hsla(180,100%,90%,0.5);
+	padding: 1em;
+}
+#map{
+	background-color: transparent;
+	border: 1px solid #000;
+	margin-right: 5px;
+}
+.echo{
+	width: 960px;
+	float: left;
+}
+.echo>div{
+	padding: 1em;
+}
+#echo{
+	border: 1px solid #000;
+}

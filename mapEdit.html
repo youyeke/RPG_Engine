@@ -3,24 +3,28 @@
 	<head>
 		<meta charset="utf-8" />
 		<title>地图编辑器</title>
+		<link rel="stylesheet" type="text/css" href="css/mapEdit.css"/>
 		<script src="js/developer.js"></script>
-		<style type="text/css">
-			#echo{
-				border: 1px solid #000;
-				float: left;
-			}
-			#map{
-				background-color: transparent;
-				border: 1px solid #000;
-				margin-right: 5px;
-				float: left;
-			}
-		</style>
 	</head>
 	<body>
 		<div style="padding: 10px;">
-			<canvas id="map" width="320px" height="640px"></canvas>
-			<canvas id="echo" width="960px" height="640px"></canvas>
+			<div class="map">
+				<div>选择地图元件</div>
+				<canvas id="map" width="320px" height="640px"></canvas>
+			</div>
+			<div class="echo">
+				<div id="echoOperate">
+					<input type="radio" name="layer" id="layer1" checked="checked" />
+					<label for="layer1">图层1</label>
+					<input type="radio" name="layer" id="layer2" />
+					<label for="layer2">图层2</label>
+					<input type="radio" name="tool" id="tool1" checked="checked" />
+					<label for="tool1">默认</label>
+					<input type="radio" name="tool" id="tool2" />
+					<label for="tool2">笔刷</label>
+				</div>
+				<canvas id="echo" width="960px" height="640px"></canvas>
+			</div>
 		</div>
 		<script type="text/javascript">
 			var mapDOM = document.getElementById("map"),
@@ -46,54 +50,102 @@
 				map.drawImage(img,0,0);
 			}
 			//载入地图 end
-			var paint = {
-				paint : '',
-				proto : '',
-				x : 0,
-				y : 0,
-				savePaint : function(canvas,x,y){
-					this.paint = canvas.getImageData(x, y, 16, 16);
-					this.proto = canvas.getImageData(x-2, y-2, 20, 20);
-					this.x = x-2;
-					this.y = y-2;
-				},
-				putPaint : function(canvas,x,y){
-					if(paint.paint != ''){
-						canvas.putImageData(this.paint,x,y);
-					}else{
-						console.log('未选取地图元件');
-					}
-				},
-				clearBorder : function(canvas){
-					canvas.putImageData(this.proto,this.x,this.y);
-				}
-			};
-			mapDOM.addEventListener("click",function(e){
-				var x = e.clientX - mapPosition.x,
-					y = e.clientY - mapPosition.y;
-				x = Math.floor(x/16)*16,
-				y = Math.floor(y/16)*16;
-				if(paint.paint != ''){
-					paint.clearBorder(map);
-				}
-				paint.savePaint(map,x,y);
-				map.strokeStyle="#FF0000";
-				map.strokeRect(x,y,16,16);
-			});
-			var press = function(e){
-				var x = e.clientX - echoPosition.x,
-					y = e.clientY - echoPosition.y;
-					x = Math.floor(x/16)*16,
-					y = Math.floor(y/16)*16;
-				paint.putPaint(echo,x,y);
-			}
-			echoDOM.addEventListener('click',press);
-			echoDOM.addEventListener('mousedown',function(){
-				echoDOM.addEventListener('mousemove',press);
-				echoDOM.addEventListener('mouseup',function(){
-					echoDOM.removeEventListener('mousemove',press);
-				})
+			var echoOperate = document.getElementById('echoOperate');
+			var mouseStetus = 'default';
+			echoOperate.addEventListener('click',function(e){
+				var operateMap = {
+					tool1 : function(){
+						mouseStetus = 'default';
+					},
+					tool2 : function(){
+						mouseStetus = 'paint';
+					},
+					default : function(){}
+				};
+				return (operateMap[e.target.id] || operateMap['default'])();
 			})
+			var mouseCoordinate = function(){
+				var mapPaint = {
+					paint : '',//画图用
+					proto : '',//恢复用
+					x : 0,
+					y : 0,
+					scrollX : 0,
+					scrollY : 0,
+					savePaint : function(canvas,x,y){
+						this.paint = canvas.getImageData(selectArea.startX, selectArea.startY, x, y);
+						console.log(selectArea.startX, selectArea.startY, x, y)
+						this.proto = canvas.getImageData(selectArea.startX -2, selectArea.startY -2, x +4, y+4);
+						this.x = selectArea.startX - 2;
+						this.y = selectArea.startY - 2;
+					},
+					putPaint : function(canvas,x,y){
+						if(mapPaint.paint != ''){
+							canvas.putImageData(this.paint,x,y);
+						}else{
+							console.log('未选取地图元件');
+						}
+					},
+					clearBorder : function(canvas){
+						canvas.putImageData(this.proto,this.x,this.y);
+					}
+				};
+				var selectArea = {
+					startX : 0,
+					startY : 0,
+					endX : 0,
+					endY : 0,
+					record : function(x,y){
+						this.startX = x;
+						this.startY = y;
+					},
+					stop : function(x,y){
+						this.endX = x;
+						this.endY = y;
+						console.log(this)
+					}
+				};
+				mapDOM.addEventListener('mousedown',function(e){
+					var x = e.clientX + mapPaint.scrollX - mapPosition.x,
+						y = e.clientY + mapPaint.scrollY - mapPosition.y;
+					x = Math.floor(x/16)*16;
+					y = Math.floor(y/16)*16;
+					selectArea.record(x,y);
+					if(mapPaint.paint != ''){
+						mapPaint.clearBorder(map);
+					}
+				});
+				mapDOM.addEventListener('mouseup',function(e){
+					var x = e.clientX + mapPaint.scrollX - mapPosition.x,
+						y = e.clientY + mapPaint.scrollY - mapPosition.y;
+					x = Math.floor(x/16)*16;
+					y = Math.floor(y/16)*16;
+					selectArea.stop(x,y);
+					mapPaint.savePaint(map,x,y);
+					map.strokeStyle="#FF0000";
+					map.strokeRect(selectArea.startX,selectArea.startY,x,y);
+				})
+				mapDOM.parentNode.onscroll = function(){
+					mapPaint.scrollY = this.scrollTop;
+					mapPaint.scrollX = this.scrollLeft;
+				}
+				var press = function(e){
+					var x = e.clientX - echoPosition.x,
+						y = e.clientY - echoPosition.y;
+						x = Math.floor(x/16)*16,
+						y = Math.floor(y/16)*16;
+					if(mouseStetus == 'paint'){
+						mapPaint.putPaint(echo,x,y);
+					}
+				}
+				echoDOM.addEventListener('click',press);
+				echoDOM.addEventListener('mousedown',function(){
+					echoDOM.addEventListener('mousemove',press);
+					echoDOM.addEventListener('mouseup',function(){
+						echoDOM.removeEventListener('mousemove',press);
+					})
+				});
+			}();
 		</script>
 	</body>
 </html>
