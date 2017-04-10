@@ -121,8 +121,8 @@
 					x = Math.floor(x/16)*16;
 					y = Math.floor(y/16)*16;
 					selectArea.stop(x,y);
-					x = x - selectArea.startX;
-					y = y - selectArea.startY;
+					x = x - selectArea.startX +16;
+					y = y - selectArea.startY +16;
 					mapPaint.savePaint(map,x,y);
 					map.strokeStyle="#FF0000";
 					map.strokeRect(selectArea.startX,selectArea.startY,x,y);
