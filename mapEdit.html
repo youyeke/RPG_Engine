@@ -12,33 +12,59 @@
 				<div>选择地图元件</div>
 				<canvas id="map" width="320px" height="640px"></canvas>
 			</div>
-			<div class="echo">
+			<div class="echoArea">
 				<div id="echoOperate">
-					<input type="radio" name="layer" id="layer1" checked="checked" />
-					<label for="layer1">图层1</label>
-					<input type="radio" name="layer" id="layer2" />
-					<label for="layer2">图层2</label>
-					<input type="radio" name="tool" id="tool1" checked="checked" />
-					<label for="tool1">默认</label>
-					<input type="radio" name="tool" id="tool2" />
-					<label for="tool2">笔刷</label>
+					<div>
+						<input type="radio" name="layer" id="layer1" checked="checked" />
+						<label for="layer1">图层1</label>
+						<input type="radio" name="layer" id="layer2" />
+						<label for="layer2">图层2</label>
+						<input type="radio" name="layer" id="layer3" />
+						<label for="layer3">图层3</label>
+					</div>
+					<div>
+						<input type="radio" name="tool" id="tool1" checked="checked" />
+						<label for="tool1">默认</label>
+						<input type="radio" name="tool" id="tool2" />
+						<label for="tool2">笔刷</label>
+					</div>
 				</div>
-				<canvas id="echo" width="960px" height="640px"></canvas>
+				<canvas id="echoLayer_1" class="echo top" width="960px" height="640px"></canvas>
+				<canvas id="echoLayer_2" class="echo" width="960px" height="640px"></canvas>
+				<canvas id="echoLayer_3" class="echo" width="960px" height="640px"></canvas>
 			</div>
 		</div>
 		<script type="text/javascript">
-			var mapDOM = document.getElementById("map"),
-				echoDOM = document.getElementById("echo");
+			var mapDOM = document.getElementById("map");
+			var echoLayer_1_DOM = document.getElementById("echoLayer_1"),
+				echoLayer_2_DOM = document.getElementById("echoLayer_2"),
+				echoLayer_3_DOM = document.getElementById("echoLayer_3");
+			var echoLayer = (function(){
+				layerMap = {
+					'_1' : echoLayer_1_DOM.getContext("2d"),
+					'_2' : echoLayer_2_DOM.getContext("2d"),
+					'_3' : echoLayer_3_DOM.getContext("2d")
+				}
+				this.nowLayer = layerMap._1;//默认第一层
+				return {
+					now : function(){
+						return nowLayer;
+					},
+					change : function(n){
+						nowLayer = layerMap[n];
+						return nowLayer;
+					}
+				}
+			})();
 			var mapPosition = { 
 			    x: mapDOM.offsetLeft, 
 				y: mapDOM.offsetTop 
 			};
 			var echoPosition = { 
-			    x: echoDOM.offsetLeft, 
-				y: echoDOM.offsetTop 
+			    x: echoLayer.now().canvas.offsetLeft + mapDOM.parentNode.offsetWidth, 
+				y: echoLayer.now().canvas.offsetTop 
 			};
-			var map= mapDOM.getContext("2d"),
-				echo= echoDOM.getContext("2d");
+			var map= mapDOM.getContext("2d");
 			//载入地图
 			var img=new Image();
 			img.src="img/tilesheet.png";
@@ -64,7 +90,7 @@
 				};
 				return (operateMap[e.target.id] || operateMap['default'])();
 			})
-			var mouseCoordinate = function(){
+			var mouseCoordinate = function(){ //画图相关控件
 				var mapPaint = {
 					paint : '',//画图用
 					proto : '',//恢复用
@@ -72,7 +98,6 @@
 					scrollY : 0,
 					savePaint : function(canvas,x,y){
 						this.paint = canvas.getImageData(selectArea.startX, selectArea.startY, x, y);
-						//console.log(selectArea.startX, selectArea.startY, x, y)
 						if(mapPaint.proto == ''){
 							this.proto = canvas.getImageData(0, 0, mapDOM.width, mapDOM.height);
 						}
@@ -88,6 +113,13 @@
 						if(mapPaint.proto != ''){
 							canvas.putImageData(this.proto,0,0);
 						}
+					},
+					compute : function(e){
+						var x = e.clientX + mapPaint.scrollX - mapPosition.x,
+							y = e.clientY + mapPaint.scrollY - mapPosition.y;
+						x = Math.floor(x/16)*16;
+						y = Math.floor(y/16)*16;
+						return {x : x ,y : y};
 					}
 				};
 				var selectArea = {
@@ -102,22 +134,17 @@
 					stop : function(x,y){
 						this.endX = x;
 						this.endY = y;
-						//console.log(this)
 					}
 				};
 				mapDOM.addEventListener('mousedown',function(e){
-					var x = e.clientX + mapPaint.scrollX - mapPosition.x,
-						y = e.clientY + mapPaint.scrollY - mapPosition.y;
-					x = Math.floor(x/16)*16;
-					y = Math.floor(y/16)*16;
+					var result = mapPaint.compute(e);
+					var x = result.x, y = result.y;
 					selectArea.record(x,y);
 					mapPaint.clearBorder(map);
 				});
 				mapDOM.addEventListener('mouseup',function(e){
-					var x = e.clientX + mapPaint.scrollX - mapPosition.x,
-						y = e.clientY + mapPaint.scrollY - mapPosition.y;
-					x = Math.floor(x/16)*16;
-					y = Math.floor(y/16)*16;
+					var result = mapPaint.compute(e);
+					var x = result.x, y = result.y;
 					selectArea.stop(x,y);
 					x = x - selectArea.startX +16;
 					y = y - selectArea.startY +16;
@@ -132,17 +159,17 @@
 				var press = function(e){
 					var x = e.clientX - echoPosition.x,
 						y = e.clientY - echoPosition.y;
-						x = Math.floor(x/16)*16,
-						y = Math.floor(y/16)*16;
+						x = Math.floor(x/16)*16 - 16,
+						y = Math.floor(y/16)*16 - 16;
 					if(mouseStetus == 'paint'){
-						mapPaint.putPaint(echo,x,y);
+						mapPaint.putPaint(echoLayer.now(),x,y);
 					}
 				}
-				echoDOM.addEventListener('click',press);
-				echoDOM.addEventListener('mousedown',function(){
-					echoDOM.addEventListener('mousemove',press);
-					echoDOM.addEventListener('mouseup',function(){
-						echoDOM.removeEventListener('mousemove',press);
+				echoLayer.now().canvas.addEventListener('click',press);
+				echoLayer.now().canvas.addEventListener('mousedown',function(){
+					echoLayer.now().canvas.addEventListener('mousemove',press);
+					echoLayer.now().canvas.addEventListener('mouseup',function(){
+						echoLayer.now().canvas.removeEventListener('mousemove',press);
 					})
 				});
 			}();

@@ -13,13 +13,23 @@
 	border: 1px solid #000;
 	margin-right: 5px;
 }
-.echo{
+.echoArea{
 	width: 960px;
 	float: left;
+	position: relative;
 }
-.echo>div{
+.echoArea>div{
+	margin-bottom: 10px;
+}
+#echoOperate>div{
+	border: 1px solid #000;
+	display: inline-block;
 	padding: 1em;
 }
-#echo{
+.echo{
 	border: 1px solid #000;
+	position: absolute;
+}
+.echoArea .top{
+	z-index: 9;
 }
