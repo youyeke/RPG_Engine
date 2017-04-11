@@ -30,6 +30,6 @@
 	border: 1px solid #000;
 	position: absolute;
 }
-.echoArea .top{
+.echoArea .active{
 	z-index: 9;
 }

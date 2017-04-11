@@ -29,12 +29,13 @@
 						<label for="tool2">笔刷</label>
 					</div>
 				</div>
-				<canvas id="echoLayer_1" class="echo top" width="960px" height="640px"></canvas>
+				<canvas id="echoLayer_1" class="echo active" width="960px" height="640px"></canvas>
 				<canvas id="echoLayer_2" class="echo" width="960px" height="640px"></canvas>
 				<canvas id="echoLayer_3" class="echo" width="960px" height="640px"></canvas>
 			</div>
 		</div>
 		<script type="text/javascript">
+			window.addEventListener('mousemove',function(e){e.preventDefault()});
 			var mapDOM = document.getElementById("map");
 			var echoLayer_1_DOM = document.getElementById("echoLayer_1"),
 				echoLayer_2_DOM = document.getElementById("echoLayer_2"),
@@ -45,6 +46,27 @@
 					'_2' : echoLayer_2_DOM.getContext("2d"),
 					'_3' : echoLayer_3_DOM.getContext("2d")
 				}
+				function bindEvent(canvas){
+					var press = function(e){
+						var x = e.clientX - echoPosition.x,
+							y = e.clientY - echoPosition.y;
+							x = Math.floor(x/16)*16 - 16,
+							y = Math.floor(y/16)*16 - 16;
+						if(mouseStetus == 'paint'){
+							mouseCoordinate.putPaint(canvas,x,y);
+						}
+					}
+					canvas.canvas.addEventListener('click',press);
+					canvas.canvas.addEventListener('mousedown',function(){
+						canvas.canvas.addEventListener('mousemove',press);
+						canvas.canvas.addEventListener('mouseup',function(){
+							canvas.canvas.removeEventListener('mousemove',press);
+						})
+					});
+				}
+				bindEvent(layerMap._1);
+				bindEvent(layerMap._2);
+				bindEvent(layerMap._3);
 				this.nowLayer = layerMap._1;//默认第一层
 				return {
 					now : function(){
@@ -86,11 +108,26 @@
 					tool2 : function(){
 						mouseStetus = 'paint';
 					},
+					layer1 : function(){
+						echoLayer.now().canvas.className = 'echo';
+						echoLayer.change('_1');
+						echoLayer.now().canvas.className = 'echo active';
+					},
+					layer2 : function(){
+						echoLayer.now().canvas.className = 'echo';
+						echoLayer.change('_2');
+						echoLayer.now().canvas.className = 'echo active';
+					},
+					layer3 : function(){
+						echoLayer.now().canvas.className = 'echo';
+						echoLayer.change('_3');
+						echoLayer.now().canvas.className = 'echo active';
+					},
 					default : function(){}
 				};
 				return (operateMap[e.target.id] || operateMap['default'])();
 			})
-			var mouseCoordinate = function(){ //画图相关控件
+			var mouseCoordinate = function(){ //画图相关
 				var mapPaint = {
 					paint : '',//画图用
 					proto : '',//恢复用
@@ -156,22 +193,7 @@
 					mapPaint.scrollY = this.scrollTop;
 					mapPaint.scrollX = this.scrollLeft;
 				}
-				var press = function(e){
-					var x = e.clientX - echoPosition.x,
-						y = e.clientY - echoPosition.y;
-						x = Math.floor(x/16)*16 - 16,
-						y = Math.floor(y/16)*16 - 16;
-					if(mouseStetus == 'paint'){
-						mapPaint.putPaint(echoLayer.now(),x,y);
-					}
-				}
-				echoLayer.now().canvas.addEventListener('click',press);
-				echoLayer.now().canvas.addEventListener('mousedown',function(){
-					echoLayer.now().canvas.addEventListener('mousemove',press);
-					echoLayer.now().canvas.addEventListener('mouseup',function(){
-						echoLayer.now().canvas.removeEventListener('mousemove',press);
-					})
-				});
+				return mapPaint;
 			}();
 		</script>
 	</body>
