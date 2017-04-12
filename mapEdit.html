@@ -9,7 +9,10 @@
 	<body>
 		<div style="padding: 10px;">
 			<div class="map">
-				<div>选择地图元件</div>
+				<div>
+					<input type="checkbox" name="grid" id="grid" />
+					<label for="grid">网格</label>
+				</div>
 				<canvas id="map" width="320px" height="640px"></canvas>
 			</div>
 			<div class="echoArea">
@@ -100,6 +103,19 @@
 			//载入地图 end
 			var echoOperate = document.getElementById('echoOperate');
 			var mouseStetus = 'default';
+			mapDOM.parentNode.addEventListener('click',function(e){
+				var operateMap = {
+					grid : function(){
+						if(e.target.checked){
+							mapDOM.className = 'grid';
+						}else{
+							mapDOM.className = '';
+						}
+					},
+					default : function(){}
+				}
+				return (operateMap[e.target.id] || operateMap['default'])();
+			})
 			echoOperate.addEventListener('click',function(e){
 				var operateMap = {
 					tool1 : function(){
