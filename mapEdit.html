@@ -31,6 +31,9 @@
 						<input type="radio" name="tool" id="tool2" />
 						<label for="tool2">笔刷</label>
 					</div>
+					<div>
+						<input type="button" id="filled" value="填满" />
+					</div>
 				</div>
 				<canvas id="echoLayer_1" class="echo active" width="960px" height="640px"></canvas>
 				<canvas id="echoLayer_2" class="echo" width="960px" height="640px"></canvas>
@@ -138,6 +141,24 @@
 						echoLayer.now().canvas.className = 'echo';
 						echoLayer.change('_3');
 						echoLayer.now().canvas.className = 'echo active';
+					},
+					filled : function(){
+						var w = mouseCoordinate.paint.width,
+							h = mouseCoordinate.paint.height;
+						var cW = echoLayer.now().canvas.width,
+							cH = echoLayer.now().canvas.height;
+						var row = Math.ceil(cH/h),
+							col = Math.ceil(cW/w);
+						for(var i = 0;i < row; i++){
+							(function(i){
+								for(var j = 0; j < col; j++){
+									echoLayer.now().putImageData(mouseCoordinate.paint,j*w,i*h);
+								}
+							})(i);
+						}
+						console.log(w,h)
+						console.log(cW,cH);
+						console.log(row,col)
 					},
 					default : function(){}
 				};
