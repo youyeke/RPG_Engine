@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>下雪效果</title>
+	<style>
+		body{margin: 0;padding: 0;background: #000;width: 100%;height: 100%;}
+		#canvas{width: 100%;height: 100%;position: absolute;top: 0;bottom: 0;left: 0;right: 0;}
+		#canvas{z-index: 9;}
+	</style>
+</head>
+<body>
+	<canvas id="canvas"></canvas>
+	<script>
+		function Snow(){
+			this.canvas = document.getElementById('canvas');
+			this.ctx = this.canvas.getContext('2d');
+			this.g = 9.8;
+			this.snows = [];
+		}
+		Snow.prototype.clear = function(time){
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		}
+		Snow.prototype.add = function(){
+			var dot = {
+				x : Math.random() * 1920,
+				y : 0,
+				r : Math.random() * 5,
+				v : Math.random() *10
+			};
+			this.snows.push(dot);
+		}
+		Snow.prototype.animate = function(time){
+			var i = this.snows.length;
+			while(i--){
+				var dot = this.snows[i];
+				//dot.x += 1;
+				dot.y += this.g * 0.24; 
+				this.draw(dot);
+			}
+			//this.draw(snow);
+		}
+		Snow.prototype.draw = function(snow){
+			this.ctx.save();
+			this.ctx.beginPath();
+		    this.ctx.fillStyle = "#efefef";
+		    this.ctx.arc(snow.x, snow.y, snow.r, 0, Math.PI * 2);
+		    this.ctx.fill();
+		    this.ctx.closePath();
+        	this.ctx.restore();
+		}
+
+
+		function Engine(){
+			if ("requestAnimationFrame" in window) {
+            	this.RAF = requestAnimationFrame;
+        	}
+        	else if ("webkitRequestAnimationFrame" in window) {
+            	this.RAF = webkitRequestAnimationFrame;
+        	}
+        	else if ("msRequestAnimationFrame" in window) {
+            	this.RAF = msRequestAnimationFrame;
+          	}
+        	else if ("mozRequestAnimationFrame" in window) {
+            	this.RAF = mozRequestAnimationFrame;
+        	}
+		};
+		Engine.prototype.init = function(fn){
+			var _this = this;
+			this.startTime = +new Date();
+			loop();
+			function loop(){
+				fn(_this.startTime);
+				if(!_this.pause) _this.RAF.call(window,loop);
+			}
+		}
+
+
+		var engine = new Engine();
+		var snow = new Snow();
+		engine.init(function(time){
+			snow.clear();
+			snow.add();
+			snow.animate(time);
+		});
+		setTimeout(function(){
+			engine.pause = true;
+		},10000);
+	</script>
+</body>
+</html>
