@@ -12,21 +12,25 @@
 <body>
 	<canvas id="canvas"></canvas>
 	<script>
-		function Snow(){
+		function Snow(full){
 			this.canvas = document.getElementById('canvas');
 			this.ctx = this.canvas.getContext('2d');
-			this.g = 9.8;
+			this.g = 2.4;
 			this.snows = [];
+			if(full){
+				this.canvas.width = window.innerWidth;
+				this.canvas.height  = window.innerHeight;
+			}
 		}
 		Snow.prototype.clear = function(time){
 			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
 		}
 		Snow.prototype.add = function(){
 			var dot = {
-				x : Math.random() * 1920,
+				x : Math.random() * this.canvas.width,
 				y : 0,
-				r : Math.random() * 5,
-				v : Math.random() *10
+				r : Math.random() * 3,
+				v : Math.random()
 			};
 			this.snows.push(dot);
 		}
@@ -35,7 +39,11 @@
 			while(i--){
 				var dot = this.snows[i];
 				//dot.x += 1;
-				dot.y += this.g * 0.24; 
+				if(dot.y > this.canvas.height) {
+					dot.y = 0;
+				}else{
+					dot.y += this.g;
+				}
 				this.draw(dot);
 			}
 			//this.draw(snow);
@@ -77,10 +85,15 @@
 
 
 		var engine = new Engine();
-		var snow = new Snow();
+		var snow = new Snow(true);
+		for (var i = 0;i < 800 ; i++) {
+			setTimeout(function(){
+				snow.add()
+			},i * 10);
+		}
 		engine.init(function(time){
 			snow.clear();
-			snow.add();
+			// snow.add();
 			snow.animate(time);
 		});
 		setTimeout(function(){
