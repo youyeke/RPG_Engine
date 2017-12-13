@@ -28,9 +28,10 @@
 		Snow.prototype.add = function(){
 			var dot = {
 				x : Math.random() * this.canvas.width,
-				y : 0,
+				y : Math.random() * this.canvas.height * -1,
 				r : Math.random() * 3,
-				v : Math.random()
+				v : Math.random(),
+				wind : Math.random() * 2
 			};
 			this.snows.push(dot);
 		}
@@ -42,6 +43,7 @@
 				if(dot.y > this.canvas.height) {
 					dot.y = 0;
 				}else{
+					dot.x += dot.wind;
 					dot.y += this.g;
 				}
 				this.draw(dot);
@@ -86,11 +88,8 @@
 
 		var engine = new Engine();
 		var snow = new Snow(true);
-		for (var i = 0;i < 800 ; i++) {
-			setTimeout(function(){
-				snow.add()
-			},i * 10);
-		}
+		for (var i = 0;i < 500 ; i++) {
+				snow.add();
 		engine.init(function(time){
 			snow.clear();
 			// snow.add();
