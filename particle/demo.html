@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+	<meta charset="UTF-8">
+	<title>演示效果</title>
+	<style>
+		body{margin: 0;padding: 0;background: #000;width: 100%;height: 100%;}
+		#window_left{position: absolute;bottom: 0;left: 0;height: 100%;z-index: 9;}
+		#window_right{position: absolute;bottom: 0;right: 0;height: 100%;z-index: 9;}
+		#window_top{position: absolute;top: 0;left: 0;right: 0;z-index: 8;background: url('img/window_top.png');height: 60px;background-size: 100% 89%;}
+		#window_bottom{position: absolute;bottom: 0;left: 0;right: 0;z-index: 8;background: url('img/window_bottom.png');height: 52px;background-size: 100% 104%;}
+		#home_left{position: absolute;bottom: 0;left: 0;height: 90%;}
+		#home_right{position: absolute;bottom: 0;right: 0;height: 90%;}
+	</style>
+</head>
+<body>
+	<div>
+		<img src="img/window_left.png" id="window_left" alt="左侧窗户">
+		<img src="img/window_right.png" id="window_right" alt="右侧窗户">
+		<div id="window_top"></div>
+		<div id="window_bottom"></div>
+		<img src="img/home_left.png" id="home_left" alt="左侧房子">
+		<img src="img/home_right.png" id="home_right" alt="右侧房子">
+	</div>
+</body>
+</html>
