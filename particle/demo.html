@@ -11,6 +11,9 @@
 		#window_bottom{position: absolute;bottom: 0;left: 0;right: 0;z-index: 8;background: url('img/window_bottom.png');height: 52px;background-size: 100% 104%;}
 		#home_left{position: absolute;bottom: 0;left: 0;height: 90%;}
 		#home_right{position: absolute;bottom: 0;right: 0;height: 90%;}
+
+		#snow{width: 100%;height: 100%;position: absolute;top: 0;bottom: 0;left: 0;right: 0;z-index: 7;}
+		#mood{width: 100%;height: 100%;position: absolute;top: 0;bottom: 0;left: 0;right: 0;z-index: 1;}
 	</style>
 </head>
 <body>
@@ -19,8 +22,125 @@
 		<img src="img/window_right.png" id="window_right" alt="右侧窗户">
 		<div id="window_top"></div>
 		<div id="window_bottom"></div>
+		<canvas id="snow"></canvas>
 		<img src="img/home_left.png" id="home_left" alt="左侧房子">
 		<img src="img/home_right.png" id="home_right" alt="右侧房子">
+		<canvas id="mood"></canvas>
+		<div style="display: none;">
+			<img src="img/moon.png" id="moodimg" alt="月亮">
+		</div>
 	</div>
+	<script>
+		function Snow(full){
+			this.canvas = document.getElementById('snow');
+			this.ctx = this.canvas.getContext('2d');
+			this.g = 2.4;
+			this.snows = [];
+			if(full){
+				this.canvas.width = window.innerWidth;
+				this.canvas.height  = window.innerHeight;
+			}
+		}
+		Snow.prototype.clear = function(time){
+			this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+		}
+		Snow.prototype.add = function(){
+			var dot = {
+				x : Math.random() * this.canvas.width,
+				y : Math.random() * this.canvas.height * -1,
+				r : Math.random() * 3,
+				v : Math.random(),
+				wind : Math.random() * 2
+			};
+			this.snows.push(dot);
+		}
+		Snow.prototype.animate = function(time){
+			var i = this.snows.length;
+			while(i--){
+				var dot = this.snows[i];
+				//dot.x += 1;
+				if(dot.y > this.canvas.height) {
+					dot.y = 0;
+				}else{
+					dot.x += dot.wind;
+					dot.y += this.g;
+				}
+				if(dot.x > this.canvas.width || dot.x < 0){
+					dot.x = Math.random() * this.canvas.width;
+					dot.y = 0;
+				}
+				this.draw(dot);
+			}
+		}
+		Snow.prototype.draw = function(snow){
+			this.ctx.save();
+			this.ctx.beginPath();
+		    this.ctx.fillStyle = "#efefef";
+		    this.ctx.arc(snow.x, snow.y, snow.r, 0, Math.PI * 2);
+		    this.ctx.fill();
+		    this.ctx.closePath();
+        	this.ctx.restore();
+		}
+
+
+		function Engine(){
+			if ("requestAnimationFrame" in window) {
+            	this.RAF = requestAnimationFrame;
+        	}
+        	else if ("webkitRequestAnimationFrame" in window) {
+            	this.RAF = webkitRequestAnimationFrame;
+        	}
+        	else if ("msRequestAnimationFrame" in window) {
+            	this.RAF = msRequestAnimationFrame;
+          	}
+        	else if ("mozRequestAnimationFrame" in window) {
+            	this.RAF = mozRequestAnimationFrame;
+        	}
+		};
+		Engine.prototype.init = function(fn){
+			var _this = this;
+			this.startTime = +new Date();
+			loop();
+			function loop(){
+				fn(_this.startTime);
+				if(!_this.pause) _this.RAF.call(window,loop);
+			}
+		}
+
+
+		var engine = new Engine();
+		var snow = new Snow(true);
+		for (var i = 0;i < 500 ; i++) {
+				snow.add();
+		}
+
+		var bgCanvas = document.getElementById("mood");
+			bgCanvas.width = window.innerWidth;
+			bgCanvas.height  = window.innerHeight;
+		var bgCtx = bgCanvas.getContext("2d");
+		var img = document.getElementById('moodimg');
+
+		var moodLightR = 120;
+		
+		img.onload = function() {
+        	engine.init(function(time){
+				snow.clear();
+			snow.animate(time);
+			drawMood()
+			});
+        }
+
+        function drawMood(){
+        	var bgCtx = document.getElementById("mood").getContext("2d");
+        	moodLightR += Math.random()*2 - 1;
+        	moodLightR = moodLightR > 50 ? moodLightR : 50;
+        	var rGrd = bgCtx.createRadialGradient(200, 200, 35, 200, 200, moodLightR);  
+				rGrd.addColorStop(0, 'white');
+				rGrd.addColorStop(1, 'transparent');
+				bgCtx.fillStyle = rGrd;
+				bgCtx.fillRect(0, 0, 400, 400);
+			bgCtx.drawImage(img, 100, 100,200,200);
+        }
+	</script>
 </body>
 </html>
