@@ -121,7 +121,7 @@
 		var img = document.getElementById('moodimg');
 
 		var moodLightR = 120;
-		
+
 		img.onload = function() {
         	engine.init(function(time){
 				snow.clear();
@@ -133,7 +133,8 @@
         function drawMood(){
         	var bgCtx = document.getElementById("mood").getContext("2d");
         	moodLightR += Math.random()*2 - 1;
-        	moodLightR = moodLightR > 50 ? moodLightR : 50;
+        	moodLightR = moodLightR > 70 ? moodLightR : moodLightR + Math.random()*2;
+        	moodLightR = moodLightR < 140 ? moodLightR : moodLightR - Math.random()*2;
         	var rGrd = bgCtx.createRadialGradient(200, 200, 35, 200, 200, moodLightR);  
 				rGrd.addColorStop(0, 'white');
 				rGrd.addColorStop(1, 'transparent');
